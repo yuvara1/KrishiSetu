@@ -35,27 +35,58 @@ export default function LoginPage() {
       {/* Left Panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-800 to-primary-950 text-white flex-col justify-center px-16">
         <Sprout className="h-16 w-16 text-primary-300 mb-8" />
-        <h1 className="text-4xl font-bold mb-4">AgriTrade Lite</h1>
-        <p className="text-primary-200 text-lg leading-relaxed">
-          Connect directly with farmers and retailers. Fair pricing, transparent
-          trading, no middlemen.
+        <h1 className="text-4xl font-bold mb-4">Krishi Setu</h1>
+        <p className="text-primary-200 text-lg leading-relaxed mb-10">
+          From farm to marketplace in just a few simple steps.
         </p>
-        <div className="mt-12 grid grid-cols-2 gap-6">
-          <div className="bg-primary-800/50 rounded-xl p-4">
-            <p className="text-2xl font-bold text-primary-300">500+</p>
-            <p className="text-primary-400 text-sm">Active Farmers</p>
+        <div className="space-y-8">
+          <div className="flex items-start gap-4">
+            <div className="flex items-center justify-center h-9 w-9 rounded-full bg-primary-300 text-primary-900 font-bold text-sm shrink-0">
+              1
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">Create Your Account</h3>
+              <p className="text-primary-200 text-sm mt-1">
+                Sign up as a farmer or retailer and set up your profile in
+                minutes.
+              </p>
+            </div>
           </div>
-          <div className="bg-primary-800/50 rounded-xl p-4">
-            <p className="text-2xl font-bold text-primary-300">1200+</p>
-            <p className="text-primary-400 text-sm">Crop Listings</p>
+          <div className="flex items-start gap-4">
+            <div className="flex items-center justify-center h-9 w-9 rounded-full bg-primary-300 text-primary-900 font-bold text-sm shrink-0">
+              2
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">List or Browse Crops</h3>
+              <p className="text-primary-200 text-sm mt-1">
+                Farmers list crop batches with photos and details. Retailers
+                browse the marketplace.
+              </p>
+            </div>
           </div>
-          <div className="bg-primary-800/50 rounded-xl p-4">
-            <p className="text-2xl font-bold text-primary-300">₹2Cr+</p>
-            <p className="text-primary-400 text-sm">Trade Volume</p>
+          <div className="flex items-start gap-4">
+            <div className="flex items-center justify-center h-9 w-9 rounded-full bg-primary-300 text-primary-900 font-bold text-sm shrink-0">
+              3
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">Place & Accept Bids</h3>
+              <p className="text-primary-200 text-sm mt-1">
+                Retailers bid on crops they need. Farmers review and accept the
+                best offers.
+              </p>
+            </div>
           </div>
-          <div className="bg-primary-800/50 rounded-xl p-4">
-            <p className="text-2xl font-bold text-primary-300">300+</p>
-            <p className="text-primary-400 text-sm">Retailers</p>
+          <div className="flex items-start gap-4">
+            <div className="flex items-center justify-center h-9 w-9 rounded-full bg-primary-300 text-primary-900 font-bold text-sm shrink-0">
+              4
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">Trade & Get Paid</h3>
+              <p className="text-primary-200 text-sm mt-1">
+                Complete the order with secure tracking and transparent payment
+                processing.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -65,7 +96,9 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <Sprout className="h-8 w-8 text-primary-600" />
-            <span className="text-2xl font-bold text-gray-900">AgriTrade</span>
+            <span className="text-2xl font-bold text-gray-900">
+              Krishi Setu
+            </span>
           </div>
 
           <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>

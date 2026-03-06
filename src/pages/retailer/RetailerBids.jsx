@@ -54,7 +54,7 @@ export default function RetailerBids() {
         key: orderData.key,
         amount: orderData.amount * 100,
         currency: orderData.currency,
-        name: "AgriTrade",
+        name: "Krishi Setu",
         description: `Payment for ${orderData.cropName}`,
         order_id: orderData.razorpayOrderId,
         prefill: {
@@ -74,7 +74,7 @@ export default function RetailerBids() {
             preferences: { show_default_blocks: true },
           },
         },
-        theme: { color: "#16a34a" },
+        theme: { color: "#d97706" },
         handler: async (response) => {
           try {
             await razorpayService.verifyPayment({

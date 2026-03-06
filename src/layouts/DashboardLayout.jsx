@@ -63,7 +63,7 @@ export default function DashboardLayout() {
     >
       <div className="flex items-center gap-2 px-6 py-5 border-b border-primary-800">
         <Sprout className="h-8 w-8 text-primary-300" />
-        <span className="text-xl font-bold">AgriTrade</span>
+        <span className="text-xl font-bold">Krishi Setu</span>
       </div>
       <div className="px-4 py-3">
         <span className="text-xs font-semibold uppercase tracking-wider text-primary-400">
@@ -103,7 +103,7 @@ export default function DashboardLayout() {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-stone-50">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex">
         <Sidebar />

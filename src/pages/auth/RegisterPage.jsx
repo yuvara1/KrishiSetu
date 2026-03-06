@@ -47,7 +47,7 @@ export default function RegisterPage() {
       {/* Left Panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-800 to-primary-950 text-white flex-col justify-center px-16">
         <Sprout className="h-16 w-16 text-primary-300 mb-8" />
-        <h1 className="text-4xl font-bold mb-4">Join AgriTrade</h1>
+        <h1 className="text-4xl font-bold mb-4">Join Krishi Setu</h1>
         <p className="text-primary-200 text-lg leading-relaxed">
           Whether you're a farmer looking to sell your produce or a retailer
           searching for quality crops — we've got you covered.
@@ -79,7 +79,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-md">
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <Sprout className="h-8 w-8 text-primary-600" />
-            <span className="text-2xl font-bold text-gray-900">AgriTrade</span>
+            <span className="text-2xl font-bold text-gray-900">Krishi Setu</span>
           </div>
 
           {step === 1 ? (
