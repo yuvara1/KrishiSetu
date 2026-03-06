@@ -103,7 +103,7 @@ export default function Marketplace() {
               key={crop.id}
               className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
             >
-              <div className="h-40 bg-gradient-to-br from-primary-100 to-earth-100 flex items-center justify-center relative">
+              <div className="h-70 bg-gradient-to-br from-primary-100 to-earth-100 flex items-center justify-center relative">
                 {crop.imageUrl ? (
                   <img
                     src={crop.imageUrl}

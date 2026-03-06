@@ -235,7 +235,7 @@ export default function FarmerCrops() {
               key={crop.id}
               className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
             >
-              <div className="h-40 bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center">
+              <div className="h-70 bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center">
                 {crop.imageUrl ? (
                   <img
                     src={crop.imageUrl}
@@ -323,11 +323,11 @@ export default function FarmerCrops() {
               Crop Image
             </label>
             {preview ? (
-              <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-200">
+              <div className="relative w-full h-100 rounded-lg overflow-hidden border border-gray-200">
                 <img
                   src={preview}
                   alt="Crop preview"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain bg-gray-50"
                 />
                 <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors flex items-center justify-center group">
                   <div className="hidden group-hover:flex gap-2">
