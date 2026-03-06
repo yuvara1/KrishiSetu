@@ -18,8 +18,9 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const isLogout = error.config?.url?.includes("/auth/logout");
+    const isAuthEndpoint = error.config?.url?.includes("/auth/");
 
-    if (error.response?.status === 401 && !isLogout) {
+    if (error.response?.status === 401 && !isLogout && !isAuthEndpoint) {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
       window.location.href = "/login";

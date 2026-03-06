@@ -23,8 +23,9 @@ export default function LoginPage() {
         ADMIN: "/admin",
       };
       navigate(routes[user.role] || "/");
-    } catch {
-      // error handled by interceptor
+    } catch (err) {
+      const msg = err.response?.data?.message || "Login failed";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

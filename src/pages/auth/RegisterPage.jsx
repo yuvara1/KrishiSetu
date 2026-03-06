@@ -32,8 +32,9 @@ export default function RegisterPage() {
       await register(form);
       toast.success("Account created! Please sign in.");
       navigate("/login");
-    } catch {
-      // handled by interceptor
+    } catch (err) {
+      const msg = err.response?.data?.message || "Registration failed";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -79,7 +80,9 @@ export default function RegisterPage() {
         <div className="w-full max-w-md">
           <div className="flex items-center gap-2 mb-8 lg:hidden">
             <Sprout className="h-8 w-8 text-primary-600" />
-            <span className="text-2xl font-bold text-gray-900">Krishi Setu</span>
+            <span className="text-2xl font-bold text-gray-900">
+              Krishi Setu
+            </span>
           </div>
 
           {step === 1 ? (
