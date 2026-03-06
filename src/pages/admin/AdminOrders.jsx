@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { orderService } from "../../services";
 import { LoadingSkeleton, EmptyState, Modal } from "../../components/ui";
 import { ShoppingCart } from "lucide-react";
@@ -7,6 +7,7 @@ import {
   formatDateTime,
   getStatusBadge,
 } from "../../utils/helpers";
+import { AgGridReact } from "ag-grid-react";
 import toast from "react-hot-toast";
 
 const ORDER_STATUSES = [
@@ -46,7 +47,99 @@ export default function AdminOrders() {
     }
   };
 
+  const StatusBadge = ({ value }) => (
+    <span
+      className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(value)}`}
+    >
+      {value}
+    </span>
+  );
+
+  const ActionRenderer = useCallback(
+    (params) => (
+      <button
+        onClick={() => {
+          setSelected(params.data);
+          setNewStatus(params.data.orderStatus);
+        }}
+        className="text-xs px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 font-medium"
+      >
+        Update
+      </button>
+    ),
+    [],
+  );
+
+  const columnDefs = useMemo(
+    () => [
+      {
+        headerName: "#",
+        field: "id",
+        flex: 0.5,
+        valueFormatter: (p) => `#${p.value}`,
+      },
+      { headerName: "Crop", field: "cropBatchName", flex: 1, filter: true },
+      { headerName: "Farmer", field: "farmerName", flex: 1, filter: true },
+      { headerName: "Retailer", field: "retailerName", flex: 1, filter: true },
+      {
+        headerName: "Amount",
+        field: "finalAmount",
+        flex: 0.8,
+        valueFormatter: (p) => formatCurrency(p.value),
+        cellClass: "font-semibold text-primary-700",
+      },
+      {
+        headerName: "Status",
+        field: "orderStatus",
+        flex: 0.8,
+        filter: true,
+        cellRenderer: (p) => <StatusBadge value={p.value} />,
+      },
+      {
+        headerName: "Payment",
+        field: "paymentStatus",
+        flex: 0.8,
+        filter: true,
+        cellRenderer: (p) => <StatusBadge value={p.value} />,
+      },
+      {
+        headerName: "Date",
+        field: "orderDate",
+        flex: 1,
+        valueFormatter: (p) => formatDateTime(p.value || p.data.createdAt),
+      },
+      {
+        headerName: "Actions",
+        flex: 0.7,
+        cellRenderer: ActionRenderer,
+        sortable: false,
+        filter: false,
+      },
+    ],
+    [ActionRenderer],
+  );
+
+  const defaultColDef = useMemo(
+    () => ({ sortable: true, resizable: true }),
+    [],
+  );
+
   if (loading) return <LoadingSkeleton rows={5} />;
+
+  if (orders.length === 0)
+    return (
+      <div>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">All Orders</h1>
+          <p className="text-gray-500 mt-1">Manage platform orders</p>
+        </div>
+        <EmptyState
+          icon={ShoppingCart}
+          title="No orders"
+          description="No orders have been placed yet"
+        />
+      </div>
+    );
 
   return (
     <div>
@@ -55,84 +148,20 @@ export default function AdminOrders() {
         <p className="text-gray-500 mt-1">Manage platform orders</p>
       </div>
 
-      {orders.length === 0 ? (
-        <EmptyState
-          icon={ShoppingCart}
-          title="No orders"
-          description="No orders have been placed yet"
+      <div
+        className="bg-white rounded-xl border border-gray-200 overflow-hidden ag-theme-alpine"
+        style={{ height: 500 }}
+      >
+        <AgGridReact
+          rowData={orders}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          pagination={true}
+          paginationPageSize={10}
+          rowHeight={48}
         />
-      ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
-                <tr>
-                  <th className="text-left px-6 py-3 font-medium">#</th>
-                  <th className="text-left px-6 py-3 font-medium">Crop</th>
-                  <th className="text-left px-6 py-3 font-medium">Farmer</th>
-                  <th className="text-left px-6 py-3 font-medium">Retailer</th>
-                  <th className="text-left px-6 py-3 font-medium">Amount</th>
-                  <th className="text-left px-6 py-3 font-medium">Status</th>
-                  <th className="text-left px-6 py-3 font-medium">Payment</th>
-                  <th className="text-left px-6 py-3 font-medium">Date</th>
-                  <th className="text-left px-6 py-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      #{order.id}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">
-                      {order.cropBatchName}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {order.farmerName}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {order.retailerName}
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-primary-700">
-                      {formatCurrency(order.finalAmount)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(order.orderStatus)}`}
-                      >
-                        {order.orderStatus}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(order.paymentStatus)}`}
-                      >
-                        {order.paymentStatus}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 text-xs">
-                      {formatDateTime(order.orderDate || order.createdAt)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => {
-                          setSelected(order);
-                          setNewStatus(order.orderStatus);
-                        }}
-                        className="text-xs px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 font-medium"
-                      >
-                        Update
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      </div>
 
-      {/* Status Update Modal */}
       <Modal
         open={!!selected}
         onClose={() => setSelected(null)}

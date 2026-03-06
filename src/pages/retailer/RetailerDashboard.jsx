@@ -4,14 +4,10 @@ import { bidService, orderService, cropService } from "../../services";
 import { StatCard, LoadingSkeleton } from "../../components/ui";
 import { Wheat, Gavel, ShoppingCart, TrendingUp } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Legend,
-  Tooltip,
-} from "recharts";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Doughnut } from "react-chartjs-2";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const COLORS = ["#22c55e", "#eab308", "#ef4444"];
 
@@ -68,6 +64,18 @@ export default function RetailerDashboard() {
 
   if (loading) return <LoadingSkeleton rows={4} />;
 
+  const pieData = {
+    labels: (stats?.bidChart || []).map((d) => d.name),
+    datasets: [
+      {
+        data: (stats?.bidChart || []).map((d) => d.value),
+        backgroundColor: COLORS,
+        borderWidth: 2,
+        borderColor: "#fff",
+      },
+    ],
+  };
+
   return (
     <div>
       <div className="mb-8">
@@ -110,26 +118,12 @@ export default function RetailerDashboard() {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Bid Status Distribution
         </h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
-            <Pie
-              data={stats?.bidChart || []}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={100}
-              paddingAngle={5}
-              dataKey="value"
-              label={({ name, value }) => `${name}: ${value}`}
-            >
-              {(stats?.bidChart || []).map((_, i) => (
-                <Cell key={i} fill={COLORS[i % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        <div className="h-[300px] flex items-center justify-center">
+          <Doughnut
+            data={pieData}
+            options={{ responsive: true, maintainAspectRatio: false }}
+          />
+        </div>
       </div>
     </div>
   );

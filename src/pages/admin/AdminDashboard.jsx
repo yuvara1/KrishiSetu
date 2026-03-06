@@ -4,18 +4,24 @@ import { StatCard, LoadingSkeleton } from "../../components/ui";
 import { Users, Wheat, ShoppingCart, TrendingUp } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Chart as ChartJS,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  BarElement,
   Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
   Legend,
-} from "recharts";
+} from "chart.js";
+import { Doughnut, Bar } from "react-chartjs-2";
+
+ChartJS.register(
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend,
+);
 
 const COLORS = ["#16a34a", "#3b82f6", "#a855f7"];
 
@@ -93,6 +99,37 @@ export default function AdminDashboard() {
 
   if (loading) return <LoadingSkeleton rows={4} />;
 
+  const pieData = {
+    labels: (stats?.userRoles || []).map((r) => r.name),
+    datasets: [
+      {
+        data: (stats?.userRoles || []).map((r) => r.value),
+        backgroundColor: COLORS,
+        borderWidth: 2,
+        borderColor: "#fff",
+      },
+    ],
+  };
+
+  const barData = {
+    labels: (stats?.orderStatus || []).map((s) => s.name),
+    datasets: [
+      {
+        label: "Orders",
+        data: (stats?.orderStatus || []).map((s) => s.count),
+        backgroundColor: "#16a34a",
+        borderRadius: 6,
+      },
+    ],
+  };
+
+  const barOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+  };
+
   return (
     <div>
       <div className="mb-8">
@@ -132,41 +169,21 @@ export default function AdminDashboard() {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             User Distribution
           </h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <PieChart>
-              <Pie
-                data={stats?.userRoles || []}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={5}
-                dataKey="value"
-                label={({ name, value }) => `${name}: ${value}`}
-              >
-                {(stats?.userRoles || []).map((_, i) => (
-                  <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="h-[280px] flex items-center justify-center">
+            <Doughnut
+              data={pieData}
+              options={{ responsive: true, maintainAspectRatio: false }}
+            />
+          </div>
         </div>
 
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Orders by Status
           </h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={stats?.orderStatus || []}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis allowDecimals={false} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#16a34a" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="h-[280px]">
+            <Bar data={barData} options={barOptions} />
+          </div>
         </div>
       </div>
     </div>

@@ -1,14 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { adminService } from "../../services";
-import {
-  LoadingSkeleton,
-  EmptyState,
-  Modal,
-  ConfirmDialog,
-  SearchInput,
-} from "../../components/ui";
-import { Users, Pencil, Trash2 } from "lucide-react";
+import { LoadingSkeleton, Modal, ConfirmDialog } from "../../components/ui";
+import { Pencil, Trash2 } from "lucide-react";
 import { formatDateTime } from "../../utils/helpers";
+import { AgGridReact } from "ag-grid-react";
 import toast from "react-hot-toast";
 
 export default function AdminUsers() {
@@ -16,7 +11,6 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [editUser, setEditUser] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
-  const [search, setSearch] = useState("");
   const [form, setForm] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -79,102 +73,110 @@ export default function AdminUsers() {
     ADMIN: "bg-purple-100 text-purple-800",
   };
 
-  const filtered = users.filter(
-    (u) =>
-      u.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-      u.email?.toLowerCase().includes(search.toLowerCase()) ||
-      u.username?.toLowerCase().includes(search.toLowerCase()),
+  const ActionRenderer = useCallback(
+    (params) => (
+      <div className="flex gap-2 items-center h-full">
+        <button
+          onClick={() => openEdit(params.data)}
+          className="p-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100"
+          title="Edit"
+        >
+          <Pencil className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() => setDeleteId(params.data.id)}
+          className="p-1.5 bg-red-50 text-red-700 rounded-lg hover:bg-red-100"
+          title="Delete"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
+    ),
+    [],
+  );
+
+  const columnDefs = useMemo(
+    () => [
+      {
+        headerName: "User",
+        field: "fullName",
+        flex: 1.5,
+        filter: true,
+        cellRenderer: (params) => (
+          <div className="flex items-center gap-3 h-full">
+            <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold text-sm">
+              {params.data.fullName?.charAt(0) || "U"}
+            </div>
+            <div>
+              <p className="font-medium text-gray-900 text-sm">
+                {params.data.fullName}
+              </p>
+              <p className="text-xs text-gray-400">@{params.data.username}</p>
+            </div>
+          </div>
+        ),
+      },
+      { headerName: "Email", field: "email", flex: 1.2, filter: true },
+      { headerName: "Phone", field: "phoneNumber", flex: 1 },
+      {
+        headerName: "Role",
+        field: "role",
+        flex: 0.8,
+        filter: true,
+        cellRenderer: (params) => (
+          <span
+            className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${roleColors[params.value] || "bg-gray-100 text-gray-800"}`}
+          >
+            {params.value}
+          </span>
+        ),
+      },
+      {
+        headerName: "Joined",
+        field: "createdAt",
+        flex: 1,
+        valueFormatter: (params) => formatDateTime(params.value),
+      },
+      {
+        headerName: "Actions",
+        flex: 0.7,
+        cellRenderer: ActionRenderer,
+        sortable: false,
+        filter: false,
+      },
+    ],
+    [ActionRenderer],
+  );
+
+  const defaultColDef = useMemo(
+    () => ({ sortable: true, resizable: true }),
+    [],
   );
 
   if (loading) return <LoadingSkeleton rows={6} />;
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-500 mt-1">View and manage platform users</p>
-        </div>
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Search users..."
-        />
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+        <p className="text-gray-500 mt-1">View and manage platform users</p>
       </div>
 
-      {filtered.length === 0 ? (
-        <EmptyState
-          icon={Users}
-          title="No users found"
-          description="No users match your search"
+      <div
+        className="bg-white rounded-xl border border-gray-200 overflow-hidden ag-theme-alpine"
+        style={{ height: 500 }}
+      >
+        <AgGridReact
+          rowData={users}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          pagination={true}
+          paginationPageSize={10}
+          domLayout="normal"
+          rowHeight={56}
+          quickFilterText=""
         />
-      ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
-                <tr>
-                  <th className="text-left px-6 py-3 font-medium">User</th>
-                  <th className="text-left px-6 py-3 font-medium">Email</th>
-                  <th className="text-left px-6 py-3 font-medium">Phone</th>
-                  <th className="text-left px-6 py-3 font-medium">Role</th>
-                  <th className="text-left px-6 py-3 font-medium">Joined</th>
-                  <th className="text-left px-6 py-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filtered.map((u) => (
-                  <tr key={u.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-semibold text-sm">
-                          {u.fullName?.charAt(0) || "U"}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {u.fullName}
-                          </p>
-                          <p className="text-xs text-gray-400">@{u.username}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">{u.email}</td>
-                    <td className="px-6 py-4 text-gray-600">{u.phoneNumber}</td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${roleColors[u.role] || "bg-gray-100 text-gray-800"}`}
-                      >
-                        {u.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 text-xs">
-                      {formatDateTime(u.createdAt)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => openEdit(u)}
-                          className="p-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100"
-                          title="Edit"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => setDeleteId(u.id)}
-                          className="p-1.5 bg-red-50 text-red-700 rounded-lg hover:bg-red-100"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Edit User Modal */}
       <Modal

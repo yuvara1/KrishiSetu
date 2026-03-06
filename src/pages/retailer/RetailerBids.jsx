@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { bidService, razorpayService } from "../../services";
 import {
@@ -12,6 +12,7 @@ import {
   formatDateTime,
   getStatusBadge,
 } from "../../utils/helpers";
+import { AgGridReact } from "ag-grid-react";
 import toast from "react-hot-toast";
 
 export default function RetailerBids() {
@@ -49,7 +50,6 @@ export default function RetailerBids() {
     try {
       const orderRes = await razorpayService.createOrder(bid.id);
       const orderData = orderRes.data.data;
-
       const options = {
         key: orderData.key,
         amount: orderData.amount * 100,
@@ -65,10 +65,7 @@ export default function RetailerBids() {
         config: {
           display: {
             blocks: {
-              upi: {
-                name: "Pay via UPI",
-                instruments: [{ method: "upi" }],
-              },
+              upi: { name: "Pay via UPI", instruments: [{ method: "upi" }] },
             },
             sequence: ["block.upi"],
             preferences: { show_default_blocks: true },
@@ -97,7 +94,6 @@ export default function RetailerBids() {
           },
         },
       };
-
       const rzp = new window.Razorpay(options);
       rzp.on("payment.failed", (response) => {
         toast.error("Payment failed: " + response.error.description);
@@ -109,6 +105,91 @@ export default function RetailerBids() {
       setProcessing(null);
     }
   };
+
+  const ActionRenderer = useCallback(
+    (params) => {
+      const bid = params.data;
+      return (
+        <div className="flex gap-2 items-center h-full">
+          {bid.bidStatus === "ACCEPTED" && !bid.paid && (
+            <button
+              onClick={() => handlePay(bid)}
+              disabled={processing === bid.id}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-xs font-medium disabled:opacity-50"
+            >
+              {processing === bid.id ? (
+                <div className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <CreditCard className="h-3.5 w-3.5" />
+              )}
+              Pay Now
+            </button>
+          )}
+          {bid.bidStatus === "ACCEPTED" && bid.paid && (
+            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs font-medium">
+              ✓ Paid
+            </span>
+          )}
+          {bid.bidStatus === "PENDING" && (
+            <button
+              onClick={() => setDeleteId(bid.id)}
+              className="p-1.5 bg-red-50 text-red-700 rounded-lg hover:bg-red-100"
+              title="Withdraw bid"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      );
+    },
+    [processing],
+  );
+
+  const columnDefs = useMemo(
+    () => [
+      { headerName: "Crop", field: "cropBatchName", flex: 1, filter: true },
+      {
+        headerName: "Bid Amount",
+        field: "bidAmount",
+        flex: 0.8,
+        valueFormatter: (p) => formatCurrency(p.value),
+        cellClass: "font-semibold text-primary-700",
+      },
+      { headerName: "Quantity", field: "bidQuantity", flex: 0.6 },
+      {
+        headerName: "Date",
+        field: "bidDate",
+        flex: 1,
+        valueFormatter: (p) => formatDateTime(p.value || p.data.createdAt),
+      },
+      {
+        headerName: "Status",
+        field: "bidStatus",
+        flex: 0.8,
+        filter: true,
+        cellRenderer: (p) => (
+          <span
+            className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(p.value)}`}
+          >
+            {p.value}
+          </span>
+        ),
+      },
+      {
+        headerName: "Actions",
+        flex: 1,
+        cellRenderer: ActionRenderer,
+        sortable: false,
+        filter: false,
+      },
+    ],
+    [ActionRenderer],
+  );
+
+  const defaultColDef = useMemo(
+    () => ({ sortable: true, resizable: true }),
+    [],
+  );
 
   if (loading) return <LoadingSkeleton rows={5} />;
 
@@ -126,80 +207,18 @@ export default function RetailerBids() {
           description="Visit the marketplace to place bids on available crops"
         />
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
-                <tr>
-                  <th className="text-left px-6 py-3 font-medium">Crop</th>
-                  <th className="text-left px-6 py-3 font-medium">
-                    Bid Amount
-                  </th>
-                  <th className="text-left px-6 py-3 font-medium">Quantity</th>
-                  <th className="text-left px-6 py-3 font-medium">Date</th>
-                  <th className="text-left px-6 py-3 font-medium">Status</th>
-                  <th className="text-left px-6 py-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {bids.map((bid) => (
-                  <tr key={bid.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {bid.cropBatchName}
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-primary-700">
-                      {formatCurrency(bid.bidAmount)}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {bid.bidQuantity}
-                    </td>
-                    <td className="px-6 py-4 text-gray-500">
-                      {formatDateTime(bid.bidDate || bid.createdAt)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(bid.bidStatus)}`}
-                      >
-                        {bid.bidStatus}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        {bid.bidStatus === "ACCEPTED" && !bid.paid && (
-                          <button
-                            onClick={() => handlePay(bid)}
-                            disabled={processing === bid.id}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-xs font-medium disabled:opacity-50"
-                          >
-                            {processing === bid.id ? (
-                              <div className="h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                              <CreditCard className="h-3.5 w-3.5" />
-                            )}
-                            Pay Now
-                          </button>
-                        )}
-                        {bid.bidStatus === "ACCEPTED" && bid.paid && (
-                          <span className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-xs font-medium">
-                            ✓ Paid
-                          </span>
-                        )}
-                        {bid.bidStatus === "PENDING" && (
-                          <button
-                            onClick={() => setDeleteId(bid.id)}
-                            className="p-1.5 bg-red-50 text-red-700 rounded-lg hover:bg-red-100"
-                            title="Withdraw bid"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div
+          className="bg-white rounded-xl border border-gray-200 overflow-hidden ag-theme-alpine"
+          style={{ height: 500 }}
+        >
+          <AgGridReact
+            rowData={bids}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            pagination={true}
+            paginationPageSize={10}
+            rowHeight={48}
+          />
         </div>
       )}
 

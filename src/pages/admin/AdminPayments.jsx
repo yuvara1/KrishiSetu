@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { orderService, paymentService } from "../../services";
 import { LoadingSkeleton, EmptyState, Modal } from "../../components/ui";
 import { CreditCard } from "lucide-react";
@@ -7,6 +7,7 @@ import {
   formatDateTime,
   getStatusBadge,
 } from "../../utils/helpers";
+import { AgGridReact } from "ag-grid-react";
 import toast from "react-hot-toast";
 
 export default function AdminPayments() {
@@ -44,7 +45,95 @@ export default function AdminPayments() {
     setSubmitting(false);
   };
 
+  const ActionRenderer = useCallback(
+    (params) => (
+      <button
+        onClick={() => {
+          setSelected(params.data);
+          setPaymentForm({
+            paymentMethod: "UPI",
+            amount: params.data.finalAmount,
+          });
+        }}
+        className="text-xs px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 font-medium"
+      >
+        Create Payment
+      </button>
+    ),
+    [],
+  );
+
+  const columnDefs = useMemo(
+    () => [
+      {
+        headerName: "Order #",
+        field: "id",
+        flex: 0.6,
+        valueFormatter: (p) => `#${p.value}`,
+      },
+      { headerName: "Crop", field: "cropBatchName", flex: 1.2, filter: true },
+      {
+        headerName: "Amount",
+        field: "finalAmount",
+        flex: 0.8,
+        valueFormatter: (p) => formatCurrency(p.value),
+        cellClass: "font-semibold text-primary-700",
+      },
+      {
+        headerName: "Payment Status",
+        field: "paymentStatus",
+        flex: 1,
+        filter: true,
+        cellRenderer: (p) => (
+          <span
+            className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(p.value)}`}
+          >
+            {p.value}
+          </span>
+        ),
+      },
+      {
+        headerName: "Date",
+        field: "createdAt",
+        flex: 1,
+        valueFormatter: (p) => formatDateTime(p.value),
+      },
+      {
+        headerName: "Actions",
+        flex: 1,
+        cellRenderer: ActionRenderer,
+        sortable: false,
+        filter: false,
+      },
+    ],
+    [ActionRenderer],
+  );
+
+  const defaultColDef = useMemo(
+    () => ({ sortable: true, resizable: true }),
+    [],
+  );
+
   if (loading) return <LoadingSkeleton rows={5} />;
+
+  if (orders.length === 0)
+    return (
+      <div>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">
+            Payment Management
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Create and manage payment records
+          </p>
+        </div>
+        <EmptyState
+          icon={CreditCard}
+          title="No orders"
+          description="Payments can be created once orders exist"
+        />
+      </div>
+    );
 
   return (
     <div>
@@ -53,73 +142,20 @@ export default function AdminPayments() {
         <p className="text-gray-500 mt-1">Create and manage payment records</p>
       </div>
 
-      {orders.length === 0 ? (
-        <EmptyState
-          icon={CreditCard}
-          title="No orders"
-          description="Payments can be created once orders exist"
+      <div
+        className="bg-white rounded-xl border border-gray-200 overflow-hidden ag-theme-alpine"
+        style={{ height: 500 }}
+      >
+        <AgGridReact
+          rowData={orders}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          pagination={true}
+          paginationPageSize={10}
+          rowHeight={48}
         />
-      ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
-                <tr>
-                  <th className="text-left px-6 py-3 font-medium">Order #</th>
-                  <th className="text-left px-6 py-3 font-medium">Crop</th>
-                  <th className="text-left px-6 py-3 font-medium">Amount</th>
-                  <th className="text-left px-6 py-3 font-medium">
-                    Payment Status
-                  </th>
-                  <th className="text-left px-6 py-3 font-medium">Date</th>
-                  <th className="text-left px-6 py-3 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      #{order.id}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">
-                      {order.cropBatchName}
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-primary-700">
-                      {formatCurrency(order.finalAmount)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(order.paymentStatus)}`}
-                      >
-                        {order.paymentStatus}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 text-xs">
-                      {formatDateTime(order.createdAt)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => {
-                          setSelected(order);
-                          setPaymentForm({
-                            paymentMethod: "UPI",
-                            amount: order.finalAmount,
-                          });
-                        }}
-                        className="text-xs px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 font-medium"
-                      >
-                        Create Payment
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      </div>
 
-      {/* Payment Modal */}
       <Modal
         open={!!selected}
         onClose={() => setSelected(null)}

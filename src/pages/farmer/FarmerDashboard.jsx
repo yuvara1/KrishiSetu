@@ -5,14 +5,16 @@ import { StatCard, LoadingSkeleton } from "../../components/ui";
 import { Wheat, Gavel, ShoppingCart, TrendingUp } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
   Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+  Legend,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 export default function FarmerDashboard() {
   const { user } = useAuth();
@@ -30,7 +32,6 @@ export default function FarmerDashboard() {
         const crops = cropsRes.data.data || [];
         const orders = ordersRes.data.data || [];
 
-        // Gather bids for all crops
         let totalBids = 0;
         for (const crop of crops.slice(0, 10)) {
           try {
@@ -78,6 +79,25 @@ export default function FarmerDashboard() {
 
   if (loading) return <LoadingSkeleton rows={4} />;
 
+  const barData = {
+    labels: (stats?.chartData || []).map((d) => d.name),
+    datasets: [
+      {
+        label: "Crops",
+        data: (stats?.chartData || []).map((d) => d.count),
+        backgroundColor: "#16a34a",
+        borderRadius: 6,
+      },
+    ],
+  };
+
+  const barOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+  };
+
   return (
     <div>
       <div className="mb-8">
@@ -120,15 +140,9 @@ export default function FarmerDashboard() {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Crop Status Overview
         </h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={stats?.chartData || []}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Bar dataKey="count" fill="#16a34a" radius={[6, 6, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="h-[300px]">
+          <Bar data={barData} options={barOptions} />
+        </div>
       </div>
     </div>
   );
