@@ -12,8 +12,8 @@ import {
   Menu,
   X,
   ChevronDown,
-  Sprout,
 } from "lucide-react";
+import logo from "../assets/krishi-setu-logo.png";
 
 const navItems = {
   FARMER: [
@@ -46,7 +46,7 @@ const Sidebar = memo(function Sidebar({
   return (
     <div className="flex flex-col h-full bg-primary-900 text-white w-64">
       <div className="flex items-center gap-2 px-6 py-5 border-b border-primary-800">
-        <Sprout className="h-8 w-8 text-primary-300" />
+        <img src={logo} alt="Krishi Setu" className="h-8 w-8" />
         <span className="text-xl font-bold">Krishi Setu</span>
       </div>
       <div className="px-4 py-3">

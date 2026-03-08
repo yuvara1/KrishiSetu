@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Sprout, Eye, EyeOff, Tractor, Store } from "lucide-react";
+import { Eye, EyeOff, Tractor, Store } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import toast from "react-hot-toast";
+import logo from "../../assets/krishi-setu-logo.png";
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -47,7 +48,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex">
       {/* Left Panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-800 to-primary-950 text-white flex-col justify-center px-16">
-        <Sprout className="h-16 w-16 text-primary-300 mb-8" />
+        <img src={logo} alt="Krishi Setu" className="h-16 w-16 mb-8" />
         <h1 className="text-4xl font-bold mb-4">Join Krishi Setu</h1>
         <p className="text-primary-200 text-lg leading-relaxed">
           Whether you're a farmer looking to sell your produce or a retailer
@@ -79,7 +80,7 @@ export default function RegisterPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
           <div className="flex items-center gap-2 mb-8 lg:hidden">
-            <Sprout className="h-8 w-8 text-primary-600" />
+            <img src={logo} alt="Krishi Setu" className="h-8 w-8" />
             <span className="text-2xl font-bold text-gray-900">
               Krishi Setu
             </span>

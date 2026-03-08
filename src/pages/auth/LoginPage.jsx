@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { Sprout, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
+import logo from "../../assets/krishi-setu-logo.png";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -35,7 +36,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex">
       {/* Left Panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-800 to-primary-950 text-white flex-col justify-center px-16">
-        <Sprout className="h-16 w-16 text-primary-300 mb-8" />
+        <img src={logo} alt="Krishi Setu" className="h-16 w-16 mb-8" />
         <h1 className="text-4xl font-bold mb-4">Krishi Setu</h1>
         <p className="text-primary-200 text-lg leading-relaxed mb-10">
           From farm to marketplace in just a few simple steps.
@@ -96,7 +97,7 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
           <div className="flex items-center gap-2 mb-8 lg:hidden">
-            <Sprout className="h-8 w-8 text-primary-600" />
+            {/* <Sprout className="h-8 w-8 text-primary-600" /> */}
             <span className="text-2xl font-bold text-gray-900">
               Krishi Setu
             </span>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { bidService, razorpayService } from "../../services";
+import logo from "../../assets/krishi-setu-logo.png";
 import {
   LoadingSkeleton,
   EmptyState,
@@ -55,6 +56,7 @@ export default function RetailerBids() {
         amount: orderData.amount * 100,
         currency: orderData.currency,
         name: "Krishi Setu",
+        // image: logo,
         description: `Payment for ${orderData.cropName}`,
         order_id: orderData.razorpayOrderId,
         prefill: {
