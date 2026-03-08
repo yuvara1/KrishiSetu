@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { cropService, orderService, bidService } from "../../services";
 import { StatCard, LoadingSkeleton } from "../../components/ui";
@@ -77,26 +77,32 @@ export default function FarmerDashboard() {
     fetchData();
   }, [user]);
 
+  const barData = useMemo(
+    () => ({
+      labels: (stats?.chartData || []).map((d) => d.name),
+      datasets: [
+        {
+          label: "Crops",
+          data: (stats?.chartData || []).map((d) => d.count),
+          backgroundColor: "#16a34a",
+          borderRadius: 6,
+        },
+      ],
+    }),
+    [stats?.chartData],
+  );
+
+  const barOptions = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+    }),
+    [],
+  );
+
   if (loading) return <LoadingSkeleton rows={4} />;
-
-  const barData = {
-    labels: (stats?.chartData || []).map((d) => d.name),
-    datasets: [
-      {
-        label: "Crops",
-        data: (stats?.chartData || []).map((d) => d.count),
-        backgroundColor: "#16a34a",
-        borderRadius: 6,
-      },
-    ],
-  };
-
-  const barOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
-  };
 
   return (
     <div>

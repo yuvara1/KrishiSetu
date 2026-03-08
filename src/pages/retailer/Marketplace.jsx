@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { cropService, bidService } from "../../services";
 import { useAuth } from "../../hooks/useAuth";
 import {
@@ -52,14 +52,18 @@ export default function Marketplace() {
     setSubmitting(false);
   };
 
-  const filtered = crops.filter((c) => {
-    const matchSearch =
-      c.cropName?.toLowerCase().includes(search.toLowerCase()) ||
-      c.farmerName?.toLowerCase().includes(search.toLowerCase()) ||
-      c.location?.toLowerCase().includes(search.toLowerCase());
-    const matchFilter = filter === "ALL" || c.status === filter;
-    return matchSearch && matchFilter;
-  });
+  const filtered = useMemo(
+    () =>
+      crops.filter((c) => {
+        const matchSearch =
+          c.cropName?.toLowerCase().includes(search.toLowerCase()) ||
+          c.farmerName?.toLowerCase().includes(search.toLowerCase()) ||
+          c.location?.toLowerCase().includes(search.toLowerCase());
+        const matchFilter = filter === "ALL" || c.status === filter;
+        return matchSearch && matchFilter;
+      }),
+    [crops, search, filter],
+  );
 
   if (loading) return <LoadingSkeleton rows={6} />;
 

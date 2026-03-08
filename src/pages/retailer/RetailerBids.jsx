@@ -71,7 +71,7 @@ export default function RetailerBids() {
             preferences: { show_default_blocks: true },
           },
         },
-        theme: { color: "#d97706" },
+        theme: { color: "#2cb054" },
         handler: async (response) => {
           try {
             await razorpayService.verifyPayment({

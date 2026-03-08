@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import { authService } from "../services";
 
 const AuthContext = createContext(null);
@@ -23,7 +30,7 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const login = async (credentials) => {
+  const login = useCallback(async (credentials) => {
     const res = await authService.login(credentials);
     const { accessToken } = res.data.data;
     localStorage.setItem("accessToken", accessToken);
@@ -32,14 +39,14 @@ export function AuthProvider({ children }) {
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
     return userData;
-  };
+  }, []);
 
-  const register = async (data) => {
+  const register = useCallback(async (data) => {
     const res = await authService.register(data);
     return res.data;
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     const token = localStorage.getItem("accessToken");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
@@ -47,13 +54,14 @@ export function AuthProvider({ children }) {
     if (token) {
       authService.logout(token).catch(() => {});
     }
-  };
+  }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo(
+    () => ({ user, login, register, logout, loading }),
+    [user, login, register, logout, loading],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => {

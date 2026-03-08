@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { adminService, orderService, cropService } from "../../services";
 import { StatCard, LoadingSkeleton } from "../../components/ui";
 import { Users, Wheat, ShoppingCart, TrendingUp } from "lucide-react";
@@ -97,38 +97,47 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
+  const pieData = useMemo(
+    () => ({
+      labels: (stats?.userRoles || []).map((r) => r.name),
+      datasets: [
+        {
+          data: (stats?.userRoles || []).map((r) => r.value),
+          backgroundColor: COLORS,
+          borderWidth: 2,
+          borderColor: "#fff",
+        },
+      ],
+    }),
+    [stats?.userRoles],
+  );
+
+  const barData = useMemo(
+    () => ({
+      labels: (stats?.orderStatus || []).map((s) => s.name),
+      datasets: [
+        {
+          label: "Orders",
+          data: (stats?.orderStatus || []).map((s) => s.count),
+          backgroundColor: "#16a34a",
+          borderRadius: 6,
+        },
+      ],
+    }),
+    [stats?.orderStatus],
+  );
+
+  const barOptions = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+    }),
+    [],
+  );
+
   if (loading) return <LoadingSkeleton rows={4} />;
-
-  const pieData = {
-    labels: (stats?.userRoles || []).map((r) => r.name),
-    datasets: [
-      {
-        data: (stats?.userRoles || []).map((r) => r.value),
-        backgroundColor: COLORS,
-        borderWidth: 2,
-        borderColor: "#fff",
-      },
-    ],
-  };
-
-  const barData = {
-    labels: (stats?.orderStatus || []).map((s) => s.name),
-    datasets: [
-      {
-        label: "Orders",
-        data: (stats?.orderStatus || []).map((s) => s.count),
-        backgroundColor: "#16a34a",
-        borderRadius: 6,
-      },
-    ],
-  };
-
-  const barOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
-  };
 
   return (
     <div>

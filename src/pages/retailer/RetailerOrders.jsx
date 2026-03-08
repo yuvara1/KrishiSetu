@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { orderService } from "../../services";
 import { LoadingSkeleton, EmptyState } from "../../components/ui";
@@ -24,12 +24,15 @@ export default function RetailerOrders() {
       .finally(() => setLoading(false));
   }, [user]);
 
-  const StatusBadge = ({ value }) => (
-    <span
-      className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(value)}`}
-    >
-      {value}
-    </span>
+  const StatusBadge = useCallback(
+    ({ value }) => (
+      <span
+        className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(value)}`}
+      >
+        {value}
+      </span>
+    ),
+    [],
   );
 
   const columnDefs = useMemo(

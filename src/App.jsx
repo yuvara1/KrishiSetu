@@ -1,31 +1,40 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { lazy, Suspense } from "react";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardLayout from "./layouts/DashboardLayout";
 
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+  </div>
+);
+
 // Auth pages
-import LoginPage from "./pages/auth/LoginPage";
-import RegisterPage from "./pages/auth/RegisterPage";
-import UnauthorizedPage from "./pages/auth/UnauthorizedPage";
+const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/auth/RegisterPage"));
+const UnauthorizedPage = lazy(() => import("./pages/auth/UnauthorizedPage"));
 
 // Farmer pages
-import FarmerDashboard from "./pages/farmer/FarmerDashboard";
-import FarmerCrops from "./pages/farmer/FarmerCrops";
-import FarmerBids from "./pages/farmer/FarmerBids";
-import FarmerOrders from "./pages/farmer/FarmerOrders";
+const FarmerDashboard = lazy(() => import("./pages/farmer/FarmerDashboard"));
+const FarmerCrops = lazy(() => import("./pages/farmer/FarmerCrops"));
+const FarmerBids = lazy(() => import("./pages/farmer/FarmerBids"));
+const FarmerOrders = lazy(() => import("./pages/farmer/FarmerOrders"));
 
 // Retailer pages
-import RetailerDashboard from "./pages/retailer/RetailerDashboard";
-import Marketplace from "./pages/retailer/Marketplace";
-import RetailerBids from "./pages/retailer/RetailerBids";
-import RetailerOrders from "./pages/retailer/RetailerOrders";
+const RetailerDashboard = lazy(
+  () => import("./pages/retailer/RetailerDashboard"),
+);
+const Marketplace = lazy(() => import("./pages/retailer/Marketplace"));
+const RetailerBids = lazy(() => import("./pages/retailer/RetailerBids"));
+const RetailerOrders = lazy(() => import("./pages/retailer/RetailerOrders"));
 
 // Admin pages
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminPayments from "./pages/admin/AdminPayments";
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
+const AdminPayments = lazy(() => import("./pages/admin/AdminPayments"));
 
 function HomeRedirect() {
   const { user, loading } = useAuth();
@@ -48,9 +57,30 @@ function App() {
         />
         <Routes>
           {/* Public routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/unauthorized" element={<UnauthorizedPage />} />
+          <Route
+            path="/login"
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <LoginPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <RegisterPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/unauthorized"
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <UnauthorizedPage />
+              </Suspense>
+            }
+          />
 
           {/* Home redirect */}
           <Route path="/" element={<HomeRedirect />} />
@@ -64,10 +94,38 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<FarmerDashboard />} />
-            <Route path="crops" element={<FarmerCrops />} />
-            <Route path="bids" element={<FarmerBids />} />
-            <Route path="orders" element={<FarmerOrders />} />
+            <Route
+              index
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <FarmerDashboard />
+                </Suspense>
+              }
+            />
+            <Route
+              path="crops"
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <FarmerCrops />
+                </Suspense>
+              }
+            />
+            <Route
+              path="bids"
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <FarmerBids />
+                </Suspense>
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <FarmerOrders />
+                </Suspense>
+              }
+            />
           </Route>
 
           {/* Retailer routes */}
@@ -79,10 +137,38 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<RetailerDashboard />} />
-            <Route path="marketplace" element={<Marketplace />} />
-            <Route path="bids" element={<RetailerBids />} />
-            <Route path="orders" element={<RetailerOrders />} />
+            <Route
+              index
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <RetailerDashboard />
+                </Suspense>
+              }
+            />
+            <Route
+              path="marketplace"
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <Marketplace />
+                </Suspense>
+              }
+            />
+            <Route
+              path="bids"
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <RetailerBids />
+                </Suspense>
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <RetailerOrders />
+                </Suspense>
+              }
+            />
           </Route>
 
           {/* Admin routes */}
@@ -94,10 +180,38 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<AdminDashboard />} />
-            <Route path="users" element={<AdminUsers />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="payments" element={<AdminPayments />} />
+            <Route
+              index
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <AdminDashboard />
+                </Suspense>
+              }
+            />
+            <Route
+              path="users"
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <AdminUsers />
+                </Suspense>
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <AdminOrders />
+                </Suspense>
+              }
+            />
+            <Route
+              path="payments"
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <AdminPayments />
+                </Suspense>
+              }
+            />
           </Route>
 
           {/* Catch all */}

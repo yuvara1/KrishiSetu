@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { cropService } from "../../services";
 import {
@@ -54,7 +54,7 @@ export default function FarmerCrops() {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef(null);
 
-  const fetchCrops = async () => {
+  const fetchCrops = useCallback(async () => {
     try {
       const res = await cropService.getByFarmer(user.id);
       setCrops(res.data.data || []);
@@ -62,7 +62,7 @@ export default function FarmerCrops() {
       /* handled */
     }
     setLoading(false);
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     if (user) fetchCrops();
@@ -183,10 +183,14 @@ export default function FarmerCrops() {
       [field]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
     });
 
-  const filtered = crops.filter(
-    (c) =>
-      c.cropName?.toLowerCase().includes(search.toLowerCase()) ||
-      c.cropType?.toLowerCase().includes(search.toLowerCase()),
+  const filtered = useMemo(
+    () =>
+      crops.filter(
+        (c) =>
+          c.cropName?.toLowerCase().includes(search.toLowerCase()) ||
+          c.cropType?.toLowerCase().includes(search.toLowerCase()),
+      ),
+    [crops, search],
   );
 
   if (loading) return <LoadingSkeleton rows={5} />;

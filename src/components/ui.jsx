@@ -1,4 +1,6 @@
-export function StatCard({
+import { memo } from "react";
+
+export const StatCard = memo(function StatCard({
   title,
   value,
   icon: Icon,
@@ -35,9 +37,9 @@ export function StatCard({
       </div>
     </div>
   );
-}
+});
 
-export function LoadingSkeleton({ rows = 5 }) {
+export const LoadingSkeleton = memo(function LoadingSkeleton({ rows = 5 }) {
   return (
     <div className="animate-pulse space-y-4">
       {Array.from({ length: rows }).map((_, i) => (
@@ -45,9 +47,14 @@ export function LoadingSkeleton({ rows = 5 }) {
       ))}
     </div>
   );
-}
+});
 
-export function EmptyState({ icon: Icon, title, description, action }) {
+export const EmptyState = memo(function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+}) {
   return (
     <div className="text-center py-12">
       {Icon && <Icon className="h-12 w-12 text-gray-300 mx-auto mb-4" />}
@@ -56,9 +63,9 @@ export function EmptyState({ icon: Icon, title, description, action }) {
       {action && <div className="mt-4">{action}</div>}
     </div>
   );
-}
+});
 
-export function Badge({ children, variant = "default" }) {
+export const Badge = memo(function Badge({ children, variant = "default" }) {
   const styles = {
     default: "bg-gray-100 text-gray-800",
     success: "bg-green-100 text-green-800",
@@ -75,9 +82,15 @@ export function Badge({ children, variant = "default" }) {
       {children}
     </span>
   );
-}
+});
 
-export function Modal({ open, onClose, title, children, size = "md" }) {
+export const Modal = memo(function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  size = "md",
+}) {
   if (!open) return null;
   const sizes = {
     sm: "max-w-sm",
@@ -105,9 +118,9 @@ export function Modal({ open, onClose, title, children, size = "md" }) {
       </div>
     </div>
   );
-}
+});
 
-export function ConfirmDialog({
+export const ConfirmDialog = memo(function ConfirmDialog({
   open,
   onClose,
   onConfirm,
@@ -140,9 +153,13 @@ export function ConfirmDialog({
       </div>
     </Modal>
   );
-}
+});
 
-export function SearchInput({ value, onChange, placeholder = "Search..." }) {
+export const SearchInput = memo(function SearchInput({
+  value,
+  onChange,
+  placeholder = "Search...",
+}) {
   return (
     <input
       type="text"
@@ -152,4 +169,4 @@ export function SearchInput({ value, onChange, placeholder = "Search..." }) {
       className="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
     />
   );
-}
+});

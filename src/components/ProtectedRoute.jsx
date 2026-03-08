@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
-export default function ProtectedRoute({ children, roles }) {
+export default memo(function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -17,4 +18,4 @@ export default function ProtectedRoute({ children, roles }) {
     return <Navigate to="/unauthorized" replace />;
 
   return children;
-}
+});

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { bidService, orderService, cropService } from "../../services";
 import { StatCard, LoadingSkeleton } from "../../components/ui";
@@ -62,19 +62,22 @@ export default function RetailerDashboard() {
     fetchData();
   }, [user]);
 
-  if (loading) return <LoadingSkeleton rows={4} />;
+  const pieData = useMemo(
+    () => ({
+      labels: (stats?.bidChart || []).map((d) => d.name),
+      datasets: [
+        {
+          data: (stats?.bidChart || []).map((d) => d.value),
+          backgroundColor: COLORS,
+          borderWidth: 2,
+          borderColor: "#fff",
+        },
+      ],
+    }),
+    [stats?.bidChart],
+  );
 
-  const pieData = {
-    labels: (stats?.bidChart || []).map((d) => d.name),
-    datasets: [
-      {
-        data: (stats?.bidChart || []).map((d) => d.value),
-        backgroundColor: COLORS,
-        borderWidth: 2,
-        borderColor: "#fff",
-      },
-    ],
-  };
+  if (loading) return <LoadingSkeleton rows={4} />;
 
   return (
     <div>
