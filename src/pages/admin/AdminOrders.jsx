@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { orderService } from "../../services";
+import { orderService, invoiceService } from "../../services";
 import { LoadingSkeleton, EmptyState, Modal } from "../../components/ui";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Download } from "lucide-react";
 import {
   formatCurrency,
   formatDateTime,
@@ -70,18 +70,43 @@ export default function AdminOrders() {
 
   const ActionRenderer = useCallback(
     (params) => (
-      <button
-        onClick={() => {
-          setSelected(params.data);
-          setNewStatus(params.data.orderStatus);
-        }}
-        className="text-xs px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 font-medium"
-      >
-        Update
-      </button>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => {
+            setSelected(params.data);
+            setNewStatus(params.data.orderStatus);
+          }}
+          className="text-xs px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 font-medium"
+        >
+          Update
+        </button>
+        <button
+          onClick={() => handleDownloadInvoice(params.data.id)}
+          className="text-xs px-2 py-1.5 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 font-medium"
+          title="Download Invoice"
+        >
+          <Download className="h-3.5 w-3.5" />
+        </button>
+      </div>
     ),
     [],
   );
+
+  const handleDownloadInvoice = useCallback(async (orderId) => {
+    try {
+      const res = await invoiceService.download(orderId);
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `invoice-${orderId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      /* handled */
+    }
+  }, []);
 
   const columnDefs = useMemo(
     () => [

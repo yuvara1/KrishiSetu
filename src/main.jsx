@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+import "./i18n";
 import "./index.css";
 import App from "./App.jsx";
 

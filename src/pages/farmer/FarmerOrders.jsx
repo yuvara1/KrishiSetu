@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { orderService } from "../../services";
+import { orderService, invoiceService } from "../../services";
 import { LoadingSkeleton, EmptyState } from "../../components/ui";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Download } from "lucide-react";
 import {
   formatCurrency,
   formatDateTime,
@@ -37,6 +37,22 @@ export default function FarmerOrders() {
     }
     setLoading(false);
   };
+
+  const handleDownloadInvoice = useCallback(async (orderId) => {
+    try {
+      const res = await invoiceService.download(orderId);
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `invoice-${orderId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      /* handled */
+    }
+  }, []);
 
   const StatusBadge = useCallback(
     ({ value }) => (
@@ -86,6 +102,21 @@ export default function FarmerOrders() {
         field: "orderDate",
         flex: 1,
         valueFormatter: (p) => formatDateTime(p.value || p.data.createdAt),
+      },
+      {
+        headerName: "Invoice",
+        flex: 0.6,
+        sortable: false,
+        filter: false,
+        cellRenderer: (p) => (
+          <button
+            onClick={() => handleDownloadInvoice(p.data.id)}
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" />
+            PDF
+          </button>
+        ),
       },
     ],
     [],

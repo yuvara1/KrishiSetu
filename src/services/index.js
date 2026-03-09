@@ -77,3 +77,26 @@ export const razorpayService = {
   createOrder: (bidId) => api.post(`/payments/razorpay/create-order/${bidId}`),
   verifyPayment: (data) => api.post("/payments/razorpay/verify", data),
 };
+
+export const notificationService = {
+  getByUser: (userId) => api.get(`/notifications/user/${userId}`),
+  getUnreadCount: (userId) =>
+    api.get(`/notifications/user/${userId}/unread-count`),
+  markAsRead: (id) => api.put(`/notifications/${id}/read`),
+  markAllAsRead: (userId) => api.put(`/notifications/user/${userId}/read-all`),
+};
+
+export const profileService = {
+  updateProfile: (data) => api.put("/auth/profile", data),
+  changePassword: (data) => api.put("/auth/change-password", data),
+  forgotPassword: (email, method = "email") =>
+    api.post("/auth/forgot-password", { email, method }),
+  verifyOtp: (email, otp) => api.post("/auth/verify-otp", { email, otp }),
+  resetPassword: (email, otp, newPassword) =>
+    api.post("/auth/reset-password", { email, otp, newPassword }),
+};
+
+export const invoiceService = {
+  download: (orderId) =>
+    api.get(`/orders/${orderId}/invoice`, { responseType: "blob" }),
+};

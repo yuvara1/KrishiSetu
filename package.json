@@ -10,18 +10,23 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@stomp/stompjs": "^7.3.0",
     "@tailwindcss/vite": "^4.2.1",
     "ag-grid-community": "^35.1.0",
     "ag-grid-react": "^35.1.0",
     "axios": "^1.13.6",
     "chart.js": "^4.5.1",
+    "i18next": "^25.8.14",
+    "i18next-browser-languagedetector": "^8.2.1",
     "lucide-react": "^0.577.0",
     "react": "^19.2.0",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",
+    "react-i18next": "^16.5.6",
     "react-router-dom": "^7.13.1",
     "recharts": "^3.7.0",
+    "sockjs-client": "^1.6.1",
     "tailwindcss": "^4.2.1"
   },
   "devDependencies": {

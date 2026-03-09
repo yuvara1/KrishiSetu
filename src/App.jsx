@@ -15,6 +15,10 @@ const LoadingFallback = () => (
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const RegisterPage = lazy(() => import("./pages/auth/RegisterPage"));
 const UnauthorizedPage = lazy(() => import("./pages/auth/UnauthorizedPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/auth/ForgotPasswordPage"));
+
+// Shared pages
+const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
 
 // Farmer pages
 const FarmerDashboard = lazy(() => import("./pages/farmer/FarmerDashboard"));
@@ -81,6 +85,14 @@ function App() {
               </Suspense>
             }
           />
+          <Route
+            path="/forgot-password"
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <ForgotPasswordPage />
+              </Suspense>
+            }
+          />
 
           {/* Home redirect */}
           <Route path="/" element={<HomeRedirect />} />
@@ -123,6 +135,14 @@ function App() {
               element={
                 <Suspense fallback={<LoadingFallback />}>
                   <FarmerOrders />
+                </Suspense>
+              }
+            />
+            <Route
+              path="profile"
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <ProfilePage />
                 </Suspense>
               }
             />
@@ -169,6 +189,14 @@ function App() {
                 </Suspense>
               }
             />
+            <Route
+              path="profile"
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <ProfilePage />
+                </Suspense>
+              }
+            />
           </Route>
 
           {/* Admin routes */}
@@ -209,6 +237,14 @@ function App() {
               element={
                 <Suspense fallback={<LoadingFallback />}>
                   <AdminPayments />
+                </Suspense>
+              }
+            />
+            <Route
+              path="profile"
+              element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <ProfilePage />
                 </Suspense>
               }
             />
