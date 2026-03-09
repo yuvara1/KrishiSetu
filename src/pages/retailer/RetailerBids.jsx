@@ -217,9 +217,8 @@ export default function RetailerBids() {
             rowData={bids}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
-            pagination={true}
-            paginationPageSize={10}
             rowHeight={48}
+            domLayout="autoHeight"
           />
         </div>
       )}

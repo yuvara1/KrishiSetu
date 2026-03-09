@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { cropService } from "../../services";
 import {
@@ -16,6 +16,8 @@ import {
   Upload,
   X as XIcon,
   ImageIcon,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   formatCurrency,
@@ -39,6 +41,8 @@ const emptyForm = {
   unit: "kg",
 };
 
+const ITEMS_PER_PAGE = 6;
+
 export default function FarmerCrops() {
   const { user } = useAuth();
   const [crops, setCrops] = useState([]);
@@ -52,21 +56,41 @@ export default function FarmerCrops() {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   const fileInputRef = useRef(null);
 
-  const fetchCrops = useCallback(async () => {
-    try {
-      const res = await cropService.getByFarmer(user.id);
-      setCrops(res.data.data || []);
-    } catch {
-      /* handled */
-    }
-    setLoading(false);
-  }, [user?.id]);
+  const fetchCrops = useCallback(
+    async (page = 0) => {
+      setLoading(true);
+      try {
+        const res = await cropService.getByFarmerPaged(
+          user.id,
+          page,
+          ITEMS_PER_PAGE,
+        );
+        const paged = res.data.data;
+        setCrops(paged.content || []);
+        setTotalPages(paged.totalPages);
+        setTotalElements(paged.totalElements);
+        setCurrentPage(paged.page);
+      } catch {
+        /* handled */
+      }
+      setLoading(false);
+    },
+    [user?.id],
+  );
 
   useEffect(() => {
-    if (user) fetchCrops();
+    if (user) fetchCrops(0);
   }, [user]);
+
+  const handlePageChange = (page) => {
+    if (loading) return;
+    fetchCrops(page);
+  };
 
   const openCreate = () => {
     setEditing(null);
@@ -106,7 +130,6 @@ export default function FarmerCrops() {
       return;
     }
 
-    // Show local preview immediately
     const localPreview = URL.createObjectURL(file);
     setPreview(localPreview);
     setUploading(true);
@@ -159,7 +182,7 @@ export default function FarmerCrops() {
         toast.success("Crop listed");
       }
       setModalOpen(false);
-      fetchCrops();
+      fetchCrops(currentPage);
     } catch {
       /* handled */
     }
@@ -171,7 +194,7 @@ export default function FarmerCrops() {
       await cropService.delete(deleteId);
       toast.success("Crop deleted");
       setDeleteId(null);
-      fetchCrops();
+      fetchCrops(currentPage);
     } catch {
       /* handled */
     }
@@ -183,17 +206,16 @@ export default function FarmerCrops() {
       [field]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
     });
 
-  const filtered = useMemo(
-    () =>
-      crops.filter(
+  // Client-side search filter on current page data
+  const filtered = search
+    ? crops.filter(
         (c) =>
           c.cropName?.toLowerCase().includes(search.toLowerCase()) ||
           c.cropType?.toLowerCase().includes(search.toLowerCase()),
-      ),
-    [crops, search],
-  );
+      )
+    : crops;
 
-  if (loading) return <LoadingSkeleton rows={5} />;
+  if (loading && crops.length === 0) return <LoadingSkeleton rows={5} />;
 
   return (
     <div>
@@ -218,7 +240,7 @@ export default function FarmerCrops() {
         />
       </div>
 
-      {filtered.length === 0 ? (
+      {filtered.length === 0 && totalElements === 0 ? (
         <EmptyState
           icon={Wheat}
           title="No crops yet"
@@ -233,84 +255,126 @@ export default function FarmerCrops() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((crop) => (
-            <div
-              key={crop.id}
-              className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
-            >
-              <div className="h-70 bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center">
-                {crop.imageUrl ? (
-                  <img
-                    src={crop.imageUrl}
-                    alt={crop.cropName}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <Wheat className="h-16 w-16 text-primary-300" />
-                )}
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map((crop) => (
+              <div
+                key={crop.id}
+                className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+              >
+                <div className="h-70 bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center">
+                  {crop.imageUrl ? (
+                    <img
+                      src={crop.imageUrl}
+                      alt={crop.cropName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Wheat className="h-16 w-16 text-primary-300" />
+                  )}
+                </div>
+                <div className="p-5">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-gray-900 text-lg">
+                      {crop.cropName}
+                    </h3>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(crop.status)}`}
+                    >
+                      {crop.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-3">{crop.cropType}</p>
+                  <div className="grid grid-cols-2 gap-2 text-sm mb-4">
+                    <div>
+                      <span className="text-gray-400">Qty:</span>{" "}
+                      <span className="font-medium">
+                        {crop.quantity} {crop.unit}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Price:</span>{" "}
+                      <span className="font-medium">
+                        {formatCurrency(crop.basePrice)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Harvest:</span>{" "}
+                      <span className="font-medium">
+                        {formatDate(crop.harvestDate)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Bids:</span>{" "}
+                      <span className="font-medium">{crop.totalBids || 0}</span>
+                    </div>
+                  </div>
+                  {crop.isOrganic && (
+                    <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full mb-3">
+                      🌿 Organic
+                    </span>
+                  )}
+                  {crop.status !== "SOLD" && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => openEdit(crop)}
+                        className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-primary-700 bg-primary-50 rounded-lg hover:bg-primary-100"
+                      >
+                        <Pencil className="h-4 w-4" /> Edit
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(crop.id)}
+                        className="flex items-center justify-center px-3 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="p-5">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900 text-lg">
-                    {crop.cropName}
-                  </h3>
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(crop.status)}`}
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6">
+              <p className="text-sm text-gray-500">
+                Showing {currentPage * ITEMS_PER_PAGE + 1}–
+                {Math.min((currentPage + 1) * ITEMS_PER_PAGE, totalElements)} of{" "}
+                {totalElements}
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 0 || loading}
+                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    disabled={loading || currentPage === page}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg cursor-pointer ${
+                      currentPage === page
+                        ? "bg-primary-600 text-white"
+                        : "border border-gray-300 hover:bg-gray-50"
+                    } disabled:opacity-40 disabled:cursor-not-allowed`}
                   >
-                    {crop.status}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 mb-3">{crop.cropType}</p>
-                <div className="grid grid-cols-2 gap-2 text-sm mb-4">
-                  <div>
-                    <span className="text-gray-400">Qty:</span>{" "}
-                    <span className="font-medium">
-                      {crop.quantity} {crop.unit}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Price:</span>{" "}
-                    <span className="font-medium">
-                      {formatCurrency(crop.basePrice)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Harvest:</span>{" "}
-                    <span className="font-medium">
-                      {formatDate(crop.harvestDate)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">Bids:</span>{" "}
-                    <span className="font-medium">{crop.totalBids || 0}</span>
-                  </div>
-                </div>
-                {crop.isOrganic && (
-                  <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full mb-3">
-                    🌿 Organic
-                  </span>
-                )}
-                {crop.status !== "SOLD" && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => openEdit(crop)}
-                      className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-sm font-medium text-primary-700 bg-primary-50 rounded-lg hover:bg-primary-100"
-                    >
-                      <Pencil className="h-4 w-4" /> Edit
-                    </button>
-                    <button
-                      onClick={() => setDeleteId(crop.id)}
-                      className="flex items-center justify-center px-3 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                )}
+                    {page + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages - 1 || loading}
+                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
               </div>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {/* Create / Edit Modal */}
@@ -321,7 +385,6 @@ export default function FarmerCrops() {
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Image Upload Area */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Crop Image

@@ -19,14 +19,30 @@ export default function AdminPayments() {
     amount: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+
+  const PAGE_SIZE = 10;
 
   useEffect(() => {
-    orderService
-      .getAll()
-      .then((res) => setOrders(res.data.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    fetchOrders();
   }, []);
+
+  const fetchOrders = async (page = 0) => {
+    setLoading(true);
+    try {
+      const res = await orderService.getAllPaged(page, PAGE_SIZE);
+      const paged = res.data.data;
+      setOrders(paged.content || []);
+      setTotalPages(paged.totalPages);
+      setTotalElements(paged.totalElements);
+      setCurrentPage(paged.page);
+    } catch {
+      /* handled */
+    }
+    setLoading(false);
+  };
 
   const handleCreatePayment = async (e) => {
     e.preventDefault();
@@ -150,10 +166,46 @@ export default function AdminPayments() {
           rowData={orders}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
-          pagination={true}
-          paginationPageSize={10}
           rowHeight={48}
+          domLayout="autoHeight"
         />
+      </div>
+
+      <div className="flex items-center justify-between mt-4 px-2">
+        <p className="text-sm text-gray-500">
+          Showing {currentPage * PAGE_SIZE + 1}–
+          {Math.min((currentPage + 1) * PAGE_SIZE, totalElements)} of{" "}
+          {totalElements}
+        </p>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => fetchOrders(currentPage - 1)}
+            disabled={currentPage === 0}
+            className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i).map((page) => (
+            <button
+              key={page}
+              onClick={() => fetchOrders(page)}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg ${
+                currentPage === page
+                  ? "bg-primary-600 text-white"
+                  : "border border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              {page + 1}
+            </button>
+          ))}
+          <button
+            onClick={() => fetchOrders(currentPage + 1)}
+            disabled={currentPage >= totalPages - 1}
+            className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       <Modal

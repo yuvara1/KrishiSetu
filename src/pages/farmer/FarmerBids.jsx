@@ -168,9 +168,8 @@ export default function FarmerBids() {
             rowData={cropBids}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
-            pagination={true}
-            paginationPageSize={10}
             rowHeight={48}
+            domLayout="autoHeight"
           />
         </div>
       )}
