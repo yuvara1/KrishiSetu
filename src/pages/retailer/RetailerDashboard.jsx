@@ -4,10 +4,28 @@ import { bidService, orderService, cropService } from "../../services";
 import { StatCard, LoadingSkeleton } from "../../components/ui";
 import { Wheat, Gavel, ShoppingCart, TrendingUp } from "lucide-react";
 import { formatCurrency } from "../../utils/helpers";
-import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, LineElement, PointElement, Tooltip, Legend } from "chart.js";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import { Doughnut, Line } from "react-chartjs-2";
+import { useTranslation } from "react-i18next";
 
-ChartJS.register(ArcElement, CategoryScale, LinearScale, LineElement, PointElement, Tooltip, Legend);
+ChartJS.register(
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
+  Tooltip,
+  Legend,
+);
 
 const COLORS = ["#22c55e", "#eab308", "#ef4444"];
 
@@ -15,6 +33,7 @@ export default function RetailerDashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!user) return;
@@ -35,13 +54,27 @@ export default function RetailerDashboard() {
 
         // Monthly spending for line chart
         const monthlySpending = {};
-        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const monthNames = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
         orders
           .filter((o) => o.paymentStatus === "COMPLETED")
           .forEach((o) => {
             const d = new Date(o.createdAt);
             const key = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
-            monthlySpending[key] = (monthlySpending[key] || 0) + (o.finalAmount || 0);
+            monthlySpending[key] =
+              (monthlySpending[key] || 0) + (o.finalAmount || 0);
           });
 
         const recentBids = bids.slice(0, 5);
@@ -53,7 +86,9 @@ export default function RetailerDashboard() {
           totalOrders: orders.length,
           spent,
           recentBids,
-          monthlySpending: Object.entries(monthlySpending).map(([month, amount]) => ({ month, amount })),
+          monthlySpending: Object.entries(monthlySpending).map(
+            ([month, amount]) => ({ month, amount }),
+          ),
           bidChart: [
             {
               name: "Pending",
@@ -114,35 +149,35 @@ export default function RetailerDashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Welcome, {user?.fullName}
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white-900">
+          {t("welcome")}, {user?.fullName}
         </h1>
-        <p className="text-gray-500 mt-1">
-          Here's your retailer dashboard overview
+        <p className="text-gray-500 mt-1 dark:text-gray-400">
+          {t("dashboardOverview")}
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
-          title="Available Crops"
+          title={t("availableCrops")}
           value={stats?.availableCrops || 0}
           icon={Wheat}
           color="primary"
         />
         <StatCard
-          title="Active Bids"
+          title={t("activeBids")}
           value={stats?.activeBids || 0}
           icon={Gavel}
           color="yellow"
         />
         <StatCard
-          title="Total Orders"
+          title={t("totalOrders")}
           value={stats?.totalOrders || 0}
           icon={ShoppingCart}
           color="blue"
         />
         <StatCard
-          title="Total Spent"
+          title={t("totalSpent")}
           value={formatCurrency(stats?.spent || 0)}
           icon={TrendingUp}
           color="purple"
@@ -152,7 +187,7 @@ export default function RetailerDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Bid Status Distribution
+            {t("bidStatusDistribution")}
           </h3>
           <div className="h-[300px] flex items-center justify-center">
             <Doughnut
@@ -164,13 +199,23 @@ export default function RetailerDashboard() {
 
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Spending Trend
+            {t("spendingTrend")}
           </h3>
           <div className="h-[300px]">
             {(stats?.monthlySpending || []).length > 0 ? (
-              <Line data={lineData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }} />
+              <Line
+                data={lineData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: { legend: { display: false } },
+                  scales: { y: { beginAtZero: true } },
+                }}
+              />
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-400">No spending data yet</div>
+              <div className="flex items-center justify-center h-full text-gray-400">
+                No spending data yet
+              </div>
             )}
           </div>
         </div>
@@ -179,29 +224,52 @@ export default function RetailerDashboard() {
       {/* Recent Bids */}
       {(stats?.recentBids || []).length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Bids</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Recent Bids
+          </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700 text-left">
-                  <th className="pb-3 font-medium text-gray-500 dark:text-gray-400">Bid ID</th>
-                  <th className="pb-3 font-medium text-gray-500 dark:text-gray-400">Crop</th>
-                  <th className="pb-3 font-medium text-gray-500 dark:text-gray-400">Amount</th>
-                  <th className="pb-3 font-medium text-gray-500 dark:text-gray-400">Status</th>
+                  <th className="pb-3 font-medium text-gray-500 dark:text-gray-400">
+                    Bid ID
+                  </th>
+                  <th className="pb-3 font-medium text-gray-500 dark:text-gray-400">
+                    Crop
+                  </th>
+                  <th className="pb-3 font-medium text-gray-500 dark:text-gray-400">
+                    Amount
+                  </th>
+                  <th className="pb-3 font-medium text-gray-500 dark:text-gray-400">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {stats.recentBids.map((bid) => (
-                  <tr key={bid.id} className="border-b border-gray-100 dark:border-gray-700">
-                    <td className="py-3 text-gray-900 dark:text-gray-200">#{bid.id}</td>
-                    <td className="py-3 text-gray-700 dark:text-gray-300">{bid.cropBatchName || "—"}</td>
-                    <td className="py-3 text-gray-900 dark:text-gray-200">{formatCurrency(bid.bidAmount || 0)}</td>
+                  <tr
+                    key={bid.id}
+                    className="border-b border-gray-100 dark:border-gray-700"
+                  >
+                    <td className="py-3 text-gray-900 dark:text-gray-200">
+                      #{bid.id}
+                    </td>
+                    <td className="py-3 text-gray-700 dark:text-gray-300">
+                      {bid.cropBatchName || "—"}
+                    </td>
+                    <td className="py-3 text-gray-900 dark:text-gray-200">
+                      {formatCurrency(bid.bidAmount || 0)}
+                    </td>
                     <td className="py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        bid.bidStatus === "ACCEPTED" ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" :
-                        bid.bidStatus === "REJECTED" ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300" :
-                        "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
-                      }`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          bid.bidStatus === "ACCEPTED"
+                            ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                            : bid.bidStatus === "REJECTED"
+                              ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                              : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300"
+                        }`}
+                      >
                         {bid.bidStatus}
                       </span>
                     </td>

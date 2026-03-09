@@ -20,7 +20,7 @@ export const StatCard = memo(function StatCard({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-900 mt-1">
             {value}
           </p>
           {trend && (

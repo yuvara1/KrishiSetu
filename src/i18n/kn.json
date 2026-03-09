@@ -20,8 +20,16 @@
   "bidStatusDistribution": "ಬಿಡ್ ಸ್ಥಿತಿ ವಿತರಣೆ",
   "revenueTrend": "ಆದಾಯ ಪ್ರವೃತ್ತಿ",
   "spendingTrend": "ಖರ್ಚು ಪ್ರವೃತ್ತಿ",
+  "noSpendingData": "ಇದೀಗ ಖರ್ಚು ಡೇಟಾ ಇಲ್ಲ",
   "recentOrders": "ಇತ್ತೀಚಿನ ಆದೇಶಗಳು",
   "recentBids": "ಇತ್ತೀಚಿನ ಬಿಡ್‌ಗಳು",
+  "bidId": "ಬಿಡ್ ಐಡಿ",
+  "crop": "ಬೆಳೆ",
+  "amount": "ಮೊತ್ತ",
+  "status": "ಸ್ಥಿತಿ",
+  "accepted": "ಸ್ವೀಕೃತ",
+  "rejected": "ನಿರಾಕೃತ",
+  "pending": "ಬಾಕಿ",
   "signIn": "ಸೈನ್ ಇನ್",
   "signUp": "ಸೈನ್ ಅಪ್",
   "email": "ಇಮೇಲ್",
@@ -41,5 +49,7 @@
   "address": "ವಿಳಾಸ",
   "language": "ಭಾಷೆ",
   "darkMode": "ಡಾರ್ಕ್ ಮೋಡ್",
-  "lightMode": "ಲೈಟ್ ಮೋಡ್"
+  "lightMode": "ಲೈಟ್ ಮೋಡ್",
+  "welcomeUser": "ಸ್ವಾಗತ, {{fullName}}",
+  "dashboardOverview": "ಇದು ನಿಮ್ಮ ರಿಟೇಲರ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಅವಲೋಕನ"
 }

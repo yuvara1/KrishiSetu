@@ -41,5 +41,14 @@
   "address": "Address",
   "language": "Language",
   "darkMode": "Dark Mode",
-  "lightMode": "Light Mode"
+  "lightMode": "Light Mode",
+  "dashboardOverview": "Here's your retailer dashboard overview",
+  "noSpendingData": "No spending data yet",
+  "bidId": "Bid ID",
+  "crop": "Crop",
+  "amount": "Amount",
+  "status": "Status",
+  "accepted": "Accepted",
+  "rejected": "Rejected",
+  "pending": "Pending"
 }

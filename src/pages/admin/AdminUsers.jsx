@@ -111,7 +111,7 @@ export default function AdminUsers() {
               <p className="font-medium text-gray-900 text-sm">
                 {params.data.fullName}
               </p>
-              <p className="text-xs text-gray-400">@{params.data.username}</p>
+              <p className="text-xs text-black">@{params.data.username}</p>
             </div>
           </div>
         ),

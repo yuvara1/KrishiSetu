@@ -214,7 +214,7 @@ export default function DashboardLayout() {
                 <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-sm font-semibold">
                   {user?.fullName?.charAt(0) || "U"}
                 </div>
-                <span className="hidden sm:block text-sm font-medium text-gray-700">
+                <span className="hidden sm:block text-sm font-medium text-gray-900 dark:text-gray-200">
                   {user?.fullName}
                 </span>
                 <ChevronDown className="h-4 w-4 text-gray-400" />
