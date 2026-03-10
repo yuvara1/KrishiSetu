@@ -216,9 +216,7 @@ export default function RetailerBids() {
           <AgGridReact
             rowData={bids}
             columnDefs={columnDefs}
-            defaultColDef={defaultColDef}
-            rowHeight={48}
-            domLayout="autoHeight"
+            // REMOVE domLayout="autoHeight"
           />
         </div>
       )}

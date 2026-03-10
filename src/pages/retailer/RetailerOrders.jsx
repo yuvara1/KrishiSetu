@@ -159,7 +159,6 @@ export default function RetailerOrders() {
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
             rowHeight={48}
-            domLayout="autoHeight"
           />
 
           {totalPages > 1 && (
