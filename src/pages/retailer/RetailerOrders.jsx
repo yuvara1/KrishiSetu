@@ -1,0 +1,207 @@
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useAuth } from "../../hooks/useAuth";
+import { orderService, invoiceService } from "../../services";
+import { LoadingSkeleton, EmptyState } from "../../components/ui";
+import { ShoppingCart, Download } from "lucide-react";
+import {
+  formatCurrency,
+  formatDateTime,
+  getStatusBadge,
+} from "../../utils/helpers";
+import { AgGridReact } from "ag-grid-react";
+
+export default function RetailerOrders() {
+  const { user } = useAuth();
+  const [orders, setOrders] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchOrders(0);
+  }, [user]);
+
+  const fetchOrders = async (page = 0) => {
+    setLoading(true);
+    try {
+      const res = await orderService.getByRetailerPaged(user.id, page, 10);
+      const paged = res.data.data;
+      setOrders(paged.content || []);
+      setTotalPages(paged.totalPages);
+      setTotalElements(paged.totalElements);
+      setCurrentPage(paged.page);
+    } catch {
+      /* handled */
+    }
+    setLoading(false);
+  };
+
+  const handlePageChange = (page) => {
+    if (loading) return;
+    fetchOrders(page);
+  };
+
+  const handleDownloadInvoice = useCallback(async (orderId) => {
+    try {
+      const res = await invoiceService.download(orderId);
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `invoice-${orderId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      /* handled */
+    }
+  }, []);
+
+  const StatusBadge = useCallback(
+    ({ value }) => (
+      <span
+        className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(value)}`}
+      >
+        {value}
+      </span>
+    ),
+    [],
+  );
+
+  const columnDefs = useMemo(
+    () => [
+      {
+        headerName: "Order #",
+        field: "id",
+        flex: 0.6,
+        valueFormatter: (p) => `#${p.value}`,
+      },
+      { headerName: "Crop", field: "cropBatchName", flex: 1, filter: true },
+      { headerName: "Farmer", field: "farmerName", flex: 1, filter: true },
+      {
+        headerName: "Amount",
+        field: "finalAmount",
+        flex: 0.8,
+        valueFormatter: (p) => formatCurrency(p.value),
+        cellClass: "font-semibold text-primary-700",
+      },
+      { headerName: "Qty", field: "quantity", flex: 0.5 },
+      {
+        headerName: "Status",
+        field: "orderStatus",
+        flex: 0.8,
+        filter: true,
+        cellRenderer: (p) => <StatusBadge value={p.value} />,
+      },
+      {
+        headerName: "Payment",
+        field: "paymentStatus",
+        flex: 0.8,
+        filter: true,
+        cellRenderer: (p) => <StatusBadge value={p.value} />,
+      },
+      {
+        headerName: "Date",
+        field: "orderDate",
+        flex: 1,
+        valueFormatter: (p) => formatDateTime(p.value || p.data.createdAt),
+      },
+      {
+        headerName: "Invoice",
+        flex: 0.6,
+        sortable: false,
+        filter: false,
+        cellRenderer: (p) => (
+          <button
+            onClick={() => handleDownloadInvoice(p.data.id)}
+            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
+          >
+            <Download className="h-3.5 w-3.5" />
+            PDF
+          </button>
+        ),
+      },
+    ],
+    [],
+  );
+
+  const defaultColDef = useMemo(
+    () => ({ sortable: true, resizable: true }),
+    [],
+  );
+
+  if (loading) return <LoadingSkeleton rows={5} />;
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
+        <p className="text-gray-500 mt-1">
+          Track your purchases and deliveries
+        </p>
+      </div>
+
+      {orders.length === 0 ? (
+        <EmptyState
+          icon={ShoppingCart}
+          title="No orders yet"
+          description="Your orders will appear here after your bids are accepted"
+        />
+      ) : (
+        <div
+          className="bg-white rounded-xl border border-gray-200 overflow-hidden ag-theme-alpine"
+          style={{ height: 500 }}
+        >
+          <AgGridReact
+            rowData={orders}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            rowHeight={48}
+          />
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 px-2">
+              <p className="text-sm text-gray-500">
+                Showing {currentPage * PAGE_SIZE + 1}–
+                {Math.min((currentPage + 1) * PAGE_SIZE, totalElements)} of{" "}
+                {totalElements}
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 0 || loading}
+                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    disabled={loading || currentPage === page}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg cursor-pointer ${
+                      currentPage === page
+                        ? "bg-primary-600 text-white"
+                        : "border border-gray-300 hover:bg-gray-50"
+                    }  disabled:cursor-not-allowed`}
+                  >
+                    {page + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages - 1 || loading}
+                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
